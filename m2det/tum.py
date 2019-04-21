@@ -43,6 +43,8 @@ class TUM:
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(bs_out)
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
 				bs_outs.append(bs_out)
+		for do in decoder_outs:
+			print (do.shape)
 		return decoder_outs
 		# conv0_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
 		# conv0_out = relu(BatchNormalization()(conv0_out))
