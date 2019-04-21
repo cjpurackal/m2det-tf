@@ -16,22 +16,26 @@ class TUM:
 		#encoder
 		encoder_outs = []
 		for i in range(self.scales):
-			conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
+			if i == 0:
+				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
+			elif i == self.scales - 1:
+				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256)(encoder_outs[i-1])			
+			else:
+				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(encoder_outs[i-1])			
 			encoder_outs.append(relu(BatchNormalization()(conv_out)))
 	
-
 		#decoder
 		decoder_outs = []
 		bs_outs = []
-		for i in range(self.scales):
+		for i in range(self.scales+1):
 			if i == 0:
-				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(encoder_outs[-i])
+				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(encoder_outs[-1])
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
-				bs_outs.append(self.bilinear_upsampler(encoder_outs[-i], encoder_outs[-i-1].shape[1:3]))
+				bs_outs.append(self.bilinear_upsampler(encoder_outs[-1], encoder_outs[-2].shape[1:3]))
 			else:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(1, 1), filters=256)(bs_outs[i-1])
 				conv_out = relu(BatchNormalization()(conv_out))	
-				if i != (self.scales-1):	
+				if i != (self.scales):	
 					bs_out = encoder_outs[-i-1] + self.bilinear_upsampler(conv_out, encoder_outs[-i-1].shape[1:3])
 				else:
 					bs_out = self.features + self.bilinear_upsampler(conv_out, self.features.shape[1:3])
@@ -39,7 +43,7 @@ class TUM:
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(bs_out)
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
 				bs_outs.append(bs_out)
-
+		return decoder_outs
 		# conv0_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
 		# conv0_out = relu(BatchNormalization()(conv0_out))
 		
@@ -95,5 +99,3 @@ class TUM:
 
 		# dec6_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(conv9_out)
 		# dec6_out = relu(BatchNormalization()(dec6_out))
-
-		# 
