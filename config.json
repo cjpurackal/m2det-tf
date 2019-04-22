@@ -1,7 +1,8 @@
 {
 	"model":{
-                "input_size": 416
-
+                "input_size": 416,
+                "scales": 5,
+                "tums_no" : 8
 
 	},
 	"train":{

@@ -4,8 +4,8 @@ from tensorflow.keras.activations import relu
 
 
 class TUM:
-	def __init__(self, features, scales = 5):
-		self.scales = scales
+	def __init__(self, config, features):
+		self.config = config
 		self.features = features
 
 	def bilinear_upsampler(self, tensor, shape):
@@ -14,10 +14,10 @@ class TUM:
 	def forward(self):
 		#encoder
 		encoder_outs = []
-		for i in range(self.scales):
+		for i in range(self.config["model"]["scales"]):
 			if i == 0:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
-			elif i == self.scales - 1:
+			elif i == self.config["model"]["scales"] - 1:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256)(encoder_outs[i-1])			
 			else:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(encoder_outs[i-1])			
@@ -28,7 +28,7 @@ class TUM:
 		#decoder
 		decoder_outs = []
 		bs_outs = []
-		for i in range(self.scales+1):
+		for i in range(self.config["model"]["scales"]+1):
 			if i == 0:
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(encoder_outs[-1])
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
@@ -36,7 +36,7 @@ class TUM:
 			else:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(1, 1), filters=256)(bs_outs[i-1])
 				conv_out = relu(BatchNormalization()(conv_out))	
-				if i != (self.scales):	
+				if i != (self.config["model"]["scales"]):	
 					bs_out = encoder_outs[-i-1] + self.bilinear_upsampler(conv_out, encoder_outs[-i-1].shape[1:3])
 				else:
 					bs_out = self.features + self.bilinear_upsampler(conv_out, self.features.shape[1:3])
