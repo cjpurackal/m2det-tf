@@ -28,5 +28,6 @@ for i in range(config["model"]["tums_no"]):
 	else:
 		features = ffm.v2(decoder_outs[i-1][-1])
 	decoder_outs.append(TUM(config,features).forward())
-	
+
+#constructing mlfpn using SFAM
 mlfpn = SFAM(config, decoder_outs).forward()
