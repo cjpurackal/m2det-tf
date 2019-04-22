@@ -7,7 +7,6 @@ class TUM:
 	def __init__(self, features, scales = 5):
 		self.scales = scales
 		self.features = features
-		self.forward()
 
 	def bilinear_upsampler(self, tensor, shape):
 		return tf.image.resize_images(tensor, shape)
@@ -24,6 +23,8 @@ class TUM:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(encoder_outs[i-1])			
 			encoder_outs.append(relu(BatchNormalization()(conv_out)))
 	
+
+
 		#decoder
 		decoder_outs = []
 		bs_outs = []
@@ -43,8 +44,6 @@ class TUM:
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(bs_out)
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
 				bs_outs.append(bs_out)
-		for do in decoder_outs:
-			print (do.shape)
 		return decoder_outs
 		# conv0_out = Conv2D(kernel_size=(3, 3), strides=(2, 2), filters=256, padding='same')(self.features)
 		# conv0_out = relu(BatchNormalization()(conv0_out))
