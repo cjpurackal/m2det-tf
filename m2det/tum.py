@@ -34,9 +34,9 @@ class TUM:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(1, 1), filters=256)(bs_outs[i-1])
 				conv_out = relu(BatchNormalization()(conv_out))	
 				if i != (self.config["model"]["scales"]):	
-					bs_out = encoder_outs[-i-1] + self.bilinear_upsampler(conv_out, encoder_outs[-i-1].shape[1:3])
+					bs_out = encoder_outs[-i-1] + bilinear_upsampler(conv_out, encoder_outs[-i-1].shape[1:3])
 				else:
-					bs_out = self.features + self.bilinear_upsampler(conv_out, self.features.shape[1:3])
+					bs_out = self.features + bilinear_upsampler(conv_out, self.features.shape[1:3])
 
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(bs_out)
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))

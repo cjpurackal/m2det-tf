@@ -2,9 +2,11 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Input, LeakyReLU, Lambda, concatenate
 from m2det.utils import bilinear_upsampler
+
 class Darknet21():
-	def __init__(self, inputs):
+	def __init__(self, inputs, config):
 		self.inputs = inputs
+		self.config = config
 
 	def forward(self):
 		# the function to implement the orgnization layer (thanks to github.com/allanzelener/YAD2K)
@@ -119,10 +121,10 @@ class Darknet21():
 		x = LeakyReLU(alpha=0.1)(x)
 
 		# Layer 21
-		skip_connection = Conv2D(64, (1,1), strides=(1,1), padding='same', name='conv_21', use_bias=False)(skip_connection)
-		skip_connection = BatchNormalization(name='norm_21')(skip_connection)
-		skip_connection = LeakyReLU(alpha=0.1)(skip_connection)
-		skip_connection = Lambda(space_to_depth_x2)(skip_connection)
+		# skip_connection = Conv2D(64, (1,1), strides=(1,1), padding='same', name='conv_21', use_bias=False)(skip_connection)
+		# skip_connection = BatchNormalization(name='norm_21')(skip_connection)
+		# skip_connection = LeakyReLU(alpha=0.1)(skip_connection)
+		# skip_connection = Lambda(space_to_depth_x2)(skip_connection)
 
 		# x = concatenate([skip_connection, x])
 
@@ -131,5 +133,7 @@ class Darknet21():
 		# # x = BatchNormalization(name='norm_22')(x)
 		# # x = LeakyReLU(alpha=0.1)(x)
 		
-		# skip_connection = bilinear_upsampler(skip_connection, ())
+		skip_connection = bilinear_upsampler(skip_connection, (self.config["model"]["backbone_feature1_size"]))
+		x = bilinear_upsampler(x, (self.config["model"]["backbone_feature2_size"]))
+
 		return skip_connection, x
