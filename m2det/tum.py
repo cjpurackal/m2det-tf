@@ -1,15 +1,12 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, BatchNormalization
 from tensorflow.keras.activations import relu
-
+from m2det.utils import bilinear_upsampler
 
 class TUM:
 	def __init__(self, config, features):
 		self.config = config
 		self.features = features
-
-	def bilinear_upsampler(self, tensor, shape):
-		return tf.image.resize_images(tensor, shape)
 
 	def forward(self):
 		#encoder
@@ -32,7 +29,7 @@ class TUM:
 			if i == 0:
 				dec_out = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=128)(encoder_outs[-1])
 				decoder_outs.append(relu(BatchNormalization()(dec_out)))
-				bs_outs.append(self.bilinear_upsampler(encoder_outs[-1], encoder_outs[-2].shape[1:3]))
+				bs_outs.append(bilinear_upsampler(encoder_outs[-1], encoder_outs[-2].shape[1:3]))
 			else:
 				conv_out = Conv2D(kernel_size=(3, 3), strides=(1, 1), filters=256)(bs_outs[i-1])
 				conv_out = relu(BatchNormalization()(conv_out))	

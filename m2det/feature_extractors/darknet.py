@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Input, LeakyReLU, Lambda, concatenate
-
+from m2det.utils import bilinear_upsampler
 class Darknet21():
 	def __init__(self, inputs):
 		self.inputs = inputs
@@ -124,10 +124,12 @@ class Darknet21():
 		skip_connection = LeakyReLU(alpha=0.1)(skip_connection)
 		skip_connection = Lambda(space_to_depth_x2)(skip_connection)
 
-		x = concatenate([skip_connection, x])
+		# x = concatenate([skip_connection, x])
 
-		# Layer 22
-		x = Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_22', use_bias=False)(x)
-		x = BatchNormalization(name='norm_22')(x)
-		x = LeakyReLU(alpha=0.1)(x)
-		return x
+		# # Layer 22
+		# # x = Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_22', use_bias=False)(x)
+		# # x = BatchNormalization(name='norm_22')(x)
+		# # x = LeakyReLU(alpha=0.1)(x)
+		
+		# skip_connection = bilinear_upsampler(skip_connection, ())
+		return skip_connection, x
