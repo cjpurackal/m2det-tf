@@ -6,7 +6,7 @@ from tensorflow.keras.activations import relu
 class FFM:
 	def __init__(self, features1, features2):
 		self.features1 = features1
-		self.features2 = features
+		self.features2 = features2
 
 	def v1(self):
 		out1 = Conv2D(kernel_size=(1, 1), filters=256)(self.features1)
