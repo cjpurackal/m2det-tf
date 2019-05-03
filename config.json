@@ -1,11 +1,11 @@
 {
 	"model":{
                 "input_size": 416,
-                "scales": 5,
-                "tums_no" : 8,
+                "backbone": "darknet21",
                 "backbone_feature1_size": [40, 40],
-                "backbone_feature2_size": [20, 20]
-
+                "backbone_feature2_size": [20, 20],
+                "scales": 5,
+                "tums_no" : 8
 
 	},
 	"train":{

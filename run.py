@@ -8,7 +8,7 @@ from m2det import FFM
 from m2det import TUM
 from m2det import SFAM
 from m2det.utils import bilinear_upsampler
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 
 config_file = sys.argv[1]
