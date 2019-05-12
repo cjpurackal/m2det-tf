@@ -8,6 +8,9 @@
                 "tums_no" : 8
 
 	},
+        "anchor":{
+                "aspect_ratios":  [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
+        },
 	"train":{
                 "train_image_folder":   "/home/andy/data/kangaroo/images/",
                 "train_annot_folder":   "/home/andy/data/kangaroo/annots/",     

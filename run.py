@@ -8,6 +8,7 @@ from m2det import FFM
 from m2det import TUM
 from m2det import SFAM
 from m2det.utils import bilinear_upsampler
+from utils.anchors import Anchors
 # tf.enable_eager_execution()
 
 
@@ -15,7 +16,8 @@ config_file = sys.argv[1]
 assert config_file, "Specify config file"
 config = json.load(open(config_file, "r"))
 
-image = tf.Variable(np.random.rand(1,320,320, 3), dtype=tf.float32)
+image = tf.Variable(np.random.rand(1,416, 416, 3), dtype=tf.float32)
+box = tf.Variable((50, 100, 300, 300), dtype=tf.float32)
 # f1, f2 = Darknet21(image, config).forward()
 f1, f2 = VGG16(image, config).forward()
 ffm = FFM(f1, f2)
@@ -32,6 +34,6 @@ for i in range(config["model"]["tums_no"]):
 
 #constructing mlfpn using SFAM
 mlfpn = SFAM(config, decoder_outs).forward()
-
+anchors, true_ind, false_ind = Anchors(box, config).call()
 # for cube in mlfpn:
 # 	print (cube.shape)
