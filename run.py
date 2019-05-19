@@ -33,6 +33,8 @@ for i in range(config["model"]["tums_no"]):
 
 #constructing mlfpn using SFAM
 mlfpn = SFAM(config, decoder_outs).forward()
-cls_pred, box_pred = predictor(config, mlfpn)
-# for cube in mlfpn:
-# 	print (cube.shape)
+boxes = []
+for cube in mlfpn:
+	print (cube.shape)
+	boxes.append(predictor(config, cube))
+# all_box = tf.concat(boxes, axis=1)
