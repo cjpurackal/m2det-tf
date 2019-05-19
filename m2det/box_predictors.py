@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, BatchNormalization
 from tensorflow.keras.activations import softmax
-from m2det.utils import flatten
 
 
 def predictor(config, features):
@@ -16,14 +15,18 @@ def predictor(config, features):
 			padding='same',use_bias=True
 			)(feature)
 		cls = BatchNormalization()(cls)
-		all_cls.append(flatten(cls))
+		sh = cls.shape
+		cls = tf.reshape(cls, [-1, sh[1] * sh[2] * sh[3]])
+		all_cls.append(cls)
 		reg = Conv2D(
 			filters=num_anchors*4,kernel_size=(3, 3),
 			strides=(1, 1),padding='same',
 			use_bias=True
 			)(feature)
 		reg = BatchNormalization()(reg)
-		all_box.append(flatten(reg))
+		sh = reg.shape
+		reg = tf.reshape(reg, [-1, sh[1] * sh[2] * sh[3]])
+		all_box.append(reg)
 	all_cls = tf.concat(all_cls, axis=1)
 	all_box = tf.concat(all_box, axis=1)
 	num_boxes = int(all_box.shape[-1]/4)
