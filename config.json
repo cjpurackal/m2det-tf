@@ -9,10 +9,10 @@
 
 	},
 
-        "anchors":{
+    "anchors":{
                   "num_anchors":  9,
                   "aspect_ratio": []
-        },
+    },
 
 	"train":{
                 "train_image_folder":   "/home/andy/data/kangaroo/images/",

@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Conv2D, BatchNormalization
 from tensorflow.keras.activations import softmax
 
 
-def predictor(config, feature):
+def simple_predictor(config, feature):
     num_anchors = config["anchors"]["num_anchors"]
     reg = Conv2D(
         filters=num_anchors*4, kernel_size=(3, 3),
