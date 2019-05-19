@@ -33,5 +33,5 @@ for i in range(config["model"]["tums_no"]):
 #constructing mlfpn using SFAM
 mlfpn = SFAM(config, decoder_outs).forward()
 
-# for cube in mlfpn:
-# 	print (cube.shape)
+for cube in mlfpn:
+	print (cube.shape)
