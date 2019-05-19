@@ -8,6 +8,7 @@ from m2det import FFM
 from m2det import TUM
 from m2det import SFAM
 from m2det.utils import bilinear_upsampler
+from m2det.box_predictors import predictor
 # tf.enable_eager_execution()
 
 
@@ -32,6 +33,8 @@ for i in range(config["model"]["tums_no"]):
 
 #constructing mlfpn using SFAM
 mlfpn = SFAM(config, decoder_outs).forward()
-
+boxes = []
 for cube in mlfpn:
 	print (cube.shape)
+	boxes.append(predictor(config, cube))
+# all_box = tf.concat(boxes, axis=1)
