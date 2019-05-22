@@ -41,3 +41,43 @@ def generate_priors(num_scales=3, anchor_scale=2.0, image_size=320, shapes=[40, 
     anchor_boxes = np.vstack(boxes_all)
 
     return anchor_boxes
+
+
+def clip_boxes(boxes, img_shape=(320, 320)):
+    """Clip boxes to image boundaries."""
+    # x1 >= 0
+    boxes[:, 0::4] = tf.maximum(boxes[:, 0::4], 0)
+    # y1 >= 0
+    boxes[:, 1::4] = tf.maximum(boxes[:, 1::4], 0)
+    # x2 < im_width
+    boxes[:, 2::4] = tf.minimum(boxes[:, 2::4], img_shape[0] - 1)
+    # y2 < img_height
+    boxes[:, 3::4] = tf.minimum(boxes[:, 3::4], img_shape[1] - 1)
+    return boxes
+
+
+def iou(anchors, boxes):
+    x1y1 = tf.maximum(anchors[:, :2], boxes[:2])
+    x2y2 = tf.minimum(anchors[:, 2:], boxes[2:])
+    wh = tf.maximum((x2y2 - x1y1)+1, 0)
+    interArea = wh[:, 0] * wh[:, 1]
+    l = (boxes[2] - boxes[0])
+    b = (boxes[3] - boxes[1])
+    areaBoxes = l*b
+    l = (anchors[:, 2] - anchors[:, 0]) 
+    b = (anchors[:, 3] - anchors[:, 1])
+    areaAnchors = l*b
+    union = areaBoxes + areaAnchors - interArea
+    iou = interArea / union
+    return iou
+
+
+def nms():
+    pass
+
+if __name__ == "__main__":
+    boxes = np.array([[-2, 4, 7, 5]])
+    shape = (6, 6)
+    y = np.array([0, 4, 5, 5])
+    out = clip_boxes(boxes, shape)
+    print (out)
