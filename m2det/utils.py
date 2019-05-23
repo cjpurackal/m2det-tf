@@ -57,27 +57,36 @@ def clip_boxes(boxes, img_shape=(320, 320)):
 
 
 def iou(anchors, boxes):
-    x1y1 = tf.maximum(anchors[:, :2], boxes[:2])
-    x2y2 = tf.minimum(anchors[:, 2:], boxes[2:])
-    wh = tf.maximum((x2y2 - x1y1)+1, 0)
-    interArea = wh[:, 0] * wh[:, 1]
+    x1 = np.maximum(anchors[:, 0], boxes[0])
+    y1 = np.maximum(anchors[:, 1], boxes[1])
+    x2 = np.minimum(anchors[:, 2], boxes[2])
+    y2 = np.maximum(anchors[:, 3], boxes[3])
+
+    width = (x2 - x1)
+    height = (y2 - y1)
+    area_overlap = width*height
+    l = (anchors[:, 2] - anchors[:, 0])
+    b = (anchors[:, 3] - anchors[:, 1])
+    area_an = l * b
     l = (boxes[2] - boxes[0])
     b = (boxes[3] - boxes[1])
-    areaBoxes = l*b
-    l = (anchors[:, 2] - anchors[:, 0]) 
-    b = (anchors[:, 3] - anchors[:, 1])
-    areaAnchors = l*b
-    union = areaBoxes + areaAnchors - interArea
-    iou = interArea / union
+    area_bx = l * b
+    union = area_an + area_bx - area_overlap
+    iou = area_overlap / (union)
     return iou
 
 
 def nms():
     pass
 
+
 if __name__ == "__main__":
     boxes = np.array([[-2, 4, 7, 5]])
     shape = (6, 6)
     y = np.array([0, 4, 5, 5])
     out = clip_boxes(boxes, shape)
-    print (out)
+    a = np.array([0, 0, 99, 99])
+    a1 = np.array([0, 0, 49, 49])
+    b = np.array([[0, 0, 49, 49]])
+    io = iou(b, a1)
+    print (io)
