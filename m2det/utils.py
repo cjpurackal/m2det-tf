@@ -9,7 +9,7 @@ def bilinear_upsampler(tensor, new_shape):
 
 
 #Reference : https://github.com/tadax/m2det/blob/master/utils/generate_priors.py
-def generate_priors(num_scales=3, anchor_scale=2.0, image_size=320, shapes=[40, 20, 10, 5, 3, 1]):
+def generate_anchors(num_scales=3, anchor_scale=2.0, image_size=320, shapes=[40, 20, 10, 5, 3, 1]):
 	anchor_configs = {}
 	for shape in shapes:
 		anchor_configs[shape] = []
@@ -66,10 +66,10 @@ def clip_boxes(boxes, img_shape=(320, 320)):
 
 
 def iou(anchors, boxes):
-	x1 = np.maximum(anchors[:, 0], boxes[:, 0])
-	y1 = np.maximum(anchors[:, 1], boxes[:, 1])
-	x2 = np.minimum(anchors[:, 2], boxes[:, 2])
-	y2 = np.minimum(anchors[:, 3], boxes[:, 3])
+	x1 = np.maximum(anchors[:, 0], boxes[0])
+	y1 = np.maximum(anchors[:, 1], boxes[1])
+	x2 = np.minimum(anchors[:, 2], boxes[2])
+	y2 = np.minimum(anchors[:, 3], boxes[3])
 
 	width = (x2 - x1)
 	height = (y2 - y1)
@@ -77,8 +77,8 @@ def iou(anchors, boxes):
 	l = (anchors[:, 2] - anchors[:, 0])
 	b = (anchors[:, 3] - anchors[:, 1])
 	area_an = l * b
-	l = (boxes[:, 2] - boxes[:, 0])
-	b = (boxes[:, 3] - boxes[:, 1])
+	l = (boxes[2] - boxes[0])
+	b = (boxes[3] - boxes[1])
 	area_bx = l * b
 	union = area_an + area_bx - area_overlap
 	iou = area_overlap / (union)

@@ -1,6 +1,7 @@
 import cv2
 import os
 import glob
+import numpy as np
 
 class Bbox:
 
@@ -95,3 +96,26 @@ def train_test_split(data_path,*args):
             else:
                 file_train.write(i+"\n")
                 counter = counter + 1 
+
+def resize(img, labels, img_size):
+	img_h, img_w = img.shape[:2]
+	ratio = max(img_h, img_w) / img_size
+	new_h = int(img_h / ratio)
+	new_w = int(img_w / ratio)
+	ox = (img_size - new_w) // 2
+	oy = (img_size - new_h) // 2
+	scaled = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+	out = np.ones((img_size, img_size, 3), dtype=np.uint8) * 127
+	out[oy:oy + new_h, ox:ox + new_w, :] = scaled
+
+	scaled_labels = []
+	for label in labels:
+	    xmin, ymin, xmax, ymax = label[1:5]
+	    xmin = (xmin * new_w + ox) / img_size
+	    ymin = (ymin * new_h + oy) / img_size
+	    xmax = (xmax * new_w + ox) / img_size
+	    ymax = (ymax * new_h + oy) / img_size
+	    label = [xmin, ymin, xmax, ymax] + label[4:]
+	    scaled_labels.append(label)
+
+	return out, scaled_labels

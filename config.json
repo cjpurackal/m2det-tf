@@ -1,6 +1,7 @@
 {
 	"model":{
-                "input_size": 416,
+                "input_size": 320,
+                "classes":80,
                 "backbone": "darknet21",
                 "backbone_feature1_size": [40, 40],
                 "backbone_feature2_size": [20, 20],
@@ -10,18 +11,19 @@
 	},
 
     "anchors":{
-                  "num_anchors":  9,
-                  "aspect_ratio": []
+                  "scales":  3,
+                  "aspect_ratio": [[1, 1], [1.41, 0.71], [0.71, 1.41]],
+                  "iou_thresh": 0.6
     },
 
 	"train":{
-                "train_image_folder":   "/home/andy/data/kangaroo/images/",
-                "train_annot_folder":   "/home/andy/data/kangaroo/annots/",     
+                "images_dir":   "/home/purackal/projects/hobby/m2det-tf/datasets/minicoco/",
+                "labels_dir":   "/home/purackal/projects/hobby/m2det-tf/datasets/minicoco/",     
                 "pretrained_weights":   "",
                 "batch_size":           16,
                 "learning_rate":        1e-4,
                 "nb_epochs":            1,
-                "saved_weights_name":   "racoon.h5",
+                "saved_weights_name":   "coco2017.h5",
                 "debug":                true,
                 "pre_nms_thresh":       0.5,
                 "post_nms_thresh":      0.5

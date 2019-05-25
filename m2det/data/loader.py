@@ -1,82 +1,50 @@
 import numpy as np
 import os
-from m2det.data.utils import Bbox
-import m2det.data.utils as utils
+import glob
+import cv2
+from m2det.data.utils import resize
+from m2det.utils import generate_anchors
+from m2det.data.label_transformer import transformer1
 
 class Loader:
 
-	def __init__(self, data_path, config, label_format):
+	def __init__(self, config):
+		images_dir = config["train"]["images_dir"]
+		labels_dir = config["train"]["labels_dir"]
+		assert os.path.exists(images_dir), "%s doesn't exis"%images_dir
+		assert os.path.exists(labels_dir), "%s doesn't exis"%labels_dir
+		self.images = [i for i in glob.glob("%s/*.jpg"%images_dir)]
+		self.labels = [i.replace("jpg", "txt") for i in glob.glob("%s/*.jpg"%images_dir)]
+		assert len(self.images)==len(self.labels), "Different Number of Images and Labels found!"
+		self.batch_size = config["train"]["batch_size"]
 		self.batch_ptr = 0
-		self.data_path = data_path
-		self.config = config
-		self.label_format = label_format
-		self.anchors = [Bbox(0, 0, config["ANCHORS"][2*i], config["ANCHORS"][2*i + 1]) for i in range(int(len(config["ANCHORS"])/2))]
-		utils.train_test_split(self.data_path)
-		
-	def next_batch(self, batch_size, train_txt_path=None, ptr=None, print_img_files=False):
-		x_batch = np.zeros([batch_size, self.config["IMAGE_W"], self.config["IMAGE_H"], 3], np.float32)
-		b_batch = np.zeros([batch_size, 1, 1, 1, self.config["TRUE_BOX_BUFFER"], 4], np.float32)
-		y_batch = np.zeros([batch_size, self.config["GRID_W"], self.config["GRID_H"], self.config["BOX"], 4+1+self.config["CLASS"]], np.float32)
-		max_iou = -1
-		best_prior = -1
-		instance_count = 0
-		if ptr == None:
-			ptr = self.batch_ptr*batch_size
-		if train_txt_path == None:
-			train_txt_path = os.path.join(self.data_path,"train.txt")
-		image_files = open(train_txt_path, "r").readlines()[ptr:ptr+batch_size]
-		if print_img_files is True:
-			print (image_files)
-			# input()
-		for img in image_files:
-			name = img.split("/")[-1][:-4]
-			# print (name)
-			cat = img.split("/")[-2]
-			lbl = open(os.path.join(self.data_path,"labels_"+self.label_format,cat,name+"txt"),"r").readlines()
-			#needs to be changed accroding to the standard format
-			lbl_all = [l+lbl[i-1] for i, l in enumerate(lbl) if i % 2 == 0]
-			objs = utils.convert_to_bbox(lbl_all)
-			image, objs = utils.manip_image_and_label(img.strip("\n"), objs, self.config)
-			# print ("number of objects = %d" % len(objs))
-			true_box_index = 0
-			for obj in objs:						
-				class_vector = np.zeros(self.config["CLASS"])
-				class_vector[obj.cat] = 1
+		self.num_classes = config["model"]["classes"]
+		self.input_size = config["model"]["input_size"]
+		self.iou_thresh = config["anchors"]["iou_thresh"]
+		self.anchors = generate_anchors()
 
-				center_x = .5 * (obj.xmin + obj.xmax)
-				center_x = center_x / (self.config["IMAGE_W"]/self.config["GRID_W"])
-				center_y = .5 * (obj.ymin + obj.ymax)
-				center_y = center_y / (self.config["IMAGE_H"]/self.config["GRID_H"])
+	def next_batch(self, ptr=None):
+		x_batch = []
+		y_batch = []
+		head = self.batch_ptr
+		tail = self.batch_ptr+self.batch_size
+		for image, label in zip(self.images[head:tail], self.labels[head:tail]):
+			img = cv2.imread(image)
+			boxes = []
+			with open(label) as lf:
+				for line in lf.readlines():
+					ix, x1, y1, x2, y2 = line.split("\t")
+					one_hot_ix = np.eye(self.num_classes)[int(ix)]
+					boxes.append([float(x1), float(y1), float(x2), float(y2)]+one_hot_ix.tolist())			
+			#resize images to 320 x 320 and correct labels accordingly
+			img, boxes = resize(img, boxes, self.input_size)
+			#process boxes and return the truth tensor
+			boxes = np.array(boxes)
+			labels = transformer1(boxes, self.num_classes, self.iou_thresh)
+			x_batch.append(img)
+			y_batch.append(labels)
 
-				center_w = (obj.xmax - obj.xmin) / (self.config["IMAGE_W"]/self.config["GRID_W"])
-				center_h = (obj.ymax - obj.ymin) / (self.config["IMAGE_H"]/self.config["GRID_H"])
-
-				grid_x = int(np.floor(center_x))
-				grid_y = int(np.floor(center_y))
-				# print ("grid_x is {} grid_y is {}".format(grid_x, grid_y))
-
-				bbox = [center_x, center_y, center_w, center_h]
-				box = Bbox(0, 0, center_w, center_h)
-
-				for i in range(len(self.anchors)):
-					iou = utils.compute_iou(self.anchors[i], box)
-					# print ("iou is : {}".format(iou))
-
-					if iou > max_iou:
-						max_iou = iou
-						best_prior = i
-						# print ("best iou is : {}".format(max_iou))
-				y_batch[instance_count, grid_x, grid_y, best_prior, 0:4] = bbox
-				y_batch[instance_count, grid_x, grid_y, best_prior, 4] = 1
-				y_batch[instance_count, grid_x, grid_y, best_prior, 5:5+self.config["CLASS"]] = class_vector
-				x_batch[instance_count] = image
-				b_batch[instance_count, 0, 0, 0, true_box_index] = bbox
-				true_box_index += 1
-				true_box_index = true_box_index % self.config["TRUE_BOX_BUFFER"]
-			instance_count += 1
-		self.batch_ptr += 1
-
-		return x_batch, b_batch, y_batch
+		return x_batch, y_batch
 
 	def set_batch_ptr(self, batch_ptr):
 		self.batch_ptr = batch_ptr
