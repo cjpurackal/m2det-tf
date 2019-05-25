@@ -20,8 +20,7 @@ config = json.load(open(config_file, "r"))
 
 loader = Loader(config)
 imgs, lbls = loader.next_batch()
-
-print (img.shape)
+print (imgs.shape)
 print (lbls.shape)
 
 

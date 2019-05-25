@@ -44,7 +44,7 @@ class Loader:
 			x_batch.append(img)
 			y_batch.append(labels)
 
-		return x_batch, y_batch
+		return np.array(x_batch), np.array(y_batch)
 
 	def set_batch_ptr(self, batch_ptr):
 		self.batch_ptr = batch_ptr
