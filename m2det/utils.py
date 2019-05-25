@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 def bilinear_upsampler(tensor, new_shape):
@@ -7,12 +9,7 @@ def bilinear_upsampler(tensor, new_shape):
 
 
 #Reference : https://github.com/tadax/m2det/blob/master/utils/generate_priors.py
-def generate_priors(
-	num_scales=3,
-	anchor_scale=2.0,
-	image_size=320,
-	shapes=[40, 20, 10, 5, 3, 1]
-):
+def generate_priors(num_scales=3, anchor_scale=2.0, image_size=320, shapes=[40, 20, 10, 5, 3, 1]):
 	anchor_configs = {}
 	for shape in shapes:
 		anchor_configs[shape] = []
@@ -107,6 +104,26 @@ def nms(dets, confidence, thresh=0.4):
 	return np.array(outputs, dtype=np.float32)
 
 
+def visualize(img, box):
+	fig, ax = plt.subplots(1)
+	ax.imshow(img)
+	boxes = np.zeros([len(box), 4])
+	boxes[:, 0] = box[:, 0]
+	boxes[:, 1] = box[:, 1] - (box[:, 1] - box[:, 3])
+	boxes[:, 2] = box[:, 2] - box[:, 0]
+	boxes[:, 3] = box[:, 1] - box[:, 3]
+	for i in range(len(box)):
+		k = 0
+		s = patches.Rectangle(
+			(box[i][k], box[i][k+1]),
+			box[i][k+2], box[i][k+3],
+			linewidth=1, edgecolor='g',
+			facecolor="none"
+			)
+		ax.add_patch(s)
+	plt.show()
+
+
 if __name__ == "__main__":
 	gt_box = np.array([[0, 0, 99, 99]])
 	boxes = np.array(
@@ -124,7 +141,4 @@ if __name__ == "__main__":
 	print (iou_)
 	print("iou cases %s"%(np.greater(check, 0.9)))
 	nms_box = nms(boxes, iou_)
-	print (
-		"nms cases are %s"
-		%(np.allclose(nms_box, boxes[:2, :]))
-		)
+	print ("nms cases are %s"%(np.allclose(nms_box, boxes[:2, :])))
