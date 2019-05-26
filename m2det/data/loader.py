@@ -26,6 +26,7 @@ class Loader:
 	def next_batch(self, ptr=None):
 		x_batch = []
 		y_batch = []
+		assert self.batch_ptr < len(self.images), "Batch pointer exceeded"
 		head = self.batch_ptr
 		tail = self.batch_ptr+self.batch_size
 		for image, label in zip(self.images[head:tail], self.labels[head:tail]):
@@ -43,7 +44,7 @@ class Loader:
 			labels = transformer1(boxes, self.num_classes, self.iou_thresh)
 			x_batch.append(img)
 			y_batch.append(labels)
-
+		self.batch_ptr += self.batch_size
 		return np.array(x_batch), np.array(y_batch)
 
 	def set_batch_ptr(self, batch_ptr):
