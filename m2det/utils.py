@@ -73,15 +73,17 @@ def iou(anchors, boxes):
 
 	width = (x2 - x1)
 	height = (y2 - y1)
-	area_overlap = width*height
+	area_overlap = np.maximum(width*height, 0)
 	l = (anchors[:, 2] - anchors[:, 0])
 	b = (anchors[:, 3] - anchors[:, 1])
 	area_an = l * b
 	l = (boxes[2] - boxes[0])
 	b = (boxes[3] - boxes[1])
 	area_bx = l * b
-	union = area_an + area_bx - area_overlap
+	union = np.maximum((area_an + area_bx) - area_overlap,0)
 	iou = area_overlap / (union)
+	iou[iou == np.inf] = 0
+	iou[iou == -np.inf] = 0
 	return iou
 
 
@@ -104,19 +106,19 @@ def nms(dets, confidence, thresh=0.4):
 	return np.array(outputs, dtype=np.float32)
 
 
-def visualize(img, box):
+def visualize(img, boxes):
 	fig, ax = plt.subplots(1)
 	ax.imshow(img)
-	boxes = np.zeros([len(box), 4])
-	boxes[:, 0] = box[:, 0]
-	boxes[:, 1] = box[:, 1] - (box[:, 1] - box[:, 3])
-	boxes[:, 2] = box[:, 2] - box[:, 0]
-	boxes[:, 3] = box[:, 1] - box[:, 3]
-	for i in range(len(box)):
+	boxes_xy_wh = boxes
+	boxes_xy_wh[:, 0] = boxes[:, 0]
+	boxes_xy_wh[:, 1] = boxes[:, 1]
+	boxes_xy_wh[:, 2] = boxes[:, 2] - boxes[:, 0]
+	boxes_xy_wh[:, 3] = boxes[:, 3] - boxes[:, 1]
+	for i in range(len(boxes_xy_wh)):
 		k = 0
 		s = patches.Rectangle(
-			(box[i][k], box[i][k+1]),
-			box[i][k+2], box[i][k+3],
+			(boxes_xy_wh[i][k], boxes_xy_wh[i][k+1]),
+			boxes_xy_wh[i][k+2], boxes_xy_wh[i][k+3],
 			linewidth=1, edgecolor='g',
 			facecolor="none"
 			)
