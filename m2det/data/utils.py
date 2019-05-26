@@ -110,7 +110,7 @@ def resize(img, labels, img_size):
 
 	scaled_labels = []
 	for label in labels:
-	    xmin, ymin, xmax, ymax = label[1:5]
+	    xmin, ymin, xmax, ymax = label[0:4]
 	    xmin = (xmin * new_w + ox) / img_size
 	    ymin = (ymin * new_h + oy) / img_size
 	    xmax = (xmax * new_w + ox) / img_size
