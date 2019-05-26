@@ -55,17 +55,21 @@ def generate_anchors(num_scales=3, anchor_scale=2.0, image_size=320, shapes=[40,
 def clip_boxes(boxes, img_shape=(320, 320)):
 	"""Clip boxes to image boundaries."""
 	# x1 >= 0
-	boxes[:, 0::4] = tf.maximum(boxes[:, 0::4], 0)
+	boxes[:, 0] = np.maximum(boxes[:, 0], 0)
 	# y1 >= 0
-	boxes[:, 1::4] = tf.maximum(boxes[:, 1::4], 0)
+	boxes[:, 1] = np.maximum(boxes[:, 1], 0)
 	# x2 < im_width
-	boxes[:, 2::4] = tf.minimum(boxes[:, 2::4], img_shape[0] - 1)
+	boxes[:, 2] = np.minimum(boxes[:, 2], img_shape[0] - 1)
 	# y2 < img_height
-	boxes[:, 3::4] = tf.minimum(boxes[:, 3::4], img_shape[1] - 1)
+	boxes[:, 3] = np.minimum(boxes[:, 3], img_shape[1] - 1)
 	return boxes
 
 
 def iou(anchors, boxes):
+	if len(boxes.shape) == 2:
+		boxes = boxes[0,:]
+	if len(anchors.shape) == 1:
+		anchors = anchors.reshape(1,-1)
 	x1 = np.maximum(anchors[:, 0], boxes[0])
 	y1 = np.maximum(anchors[:, 1], boxes[1])
 	x2 = np.minimum(anchors[:, 2], boxes[2])
@@ -82,8 +86,17 @@ def iou(anchors, boxes):
 	area_bx = l * b
 	union = np.maximum((area_an + area_bx) - area_overlap,0)
 	iou = area_overlap / (union)
+
+	#setting iou to 0 which doesn't have overlap with ground truth
 	iou[iou == np.inf] = 0
 	iou[iou == -np.inf] = 0
+	iou[anchors[:,2] < boxes[0]] = 0
+	iou[anchors[:,0] > boxes[2]] = 0
+	iou[anchors[:,3] < boxes[1]] = 0
+	iou[anchors[:,1] > boxes[3]] = 0
+
+
+
 	return iou
 
 
@@ -107,6 +120,8 @@ def nms(dets, confidence, thresh=0.4):
 
 
 def visualize(img, boxes):
+	if len(boxes.shape) == 1:
+		boxes = boxes.reshape(1,-1)
 	fig, ax = plt.subplots(1)
 	ax.imshow(img)
 	boxes_xy_wh = boxes
