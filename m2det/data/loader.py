@@ -23,29 +23,30 @@ class Loader:
 		self.iou_thresh = config["anchors"]["iou_thresh"]
 		self.anchors = generate_anchors()
 
-	def next_batch(self, ptr=None):
-		x_batch = []
-		y_batch = []
-		assert self.batch_ptr < len(self.images), "Batch pointer exceeded"
-		head = self.batch_ptr
-		tail = self.batch_ptr+self.batch_size
-		for image, label in zip(self.images[head:tail], self.labels[head:tail]):
-			img = cv2.imread(image)
-			boxes = []
-			with open(label) as lf:
-				for line in lf.readlines():
-					ix, x1, y1, x2, y2 = line.split("\t")
-					one_hot_ix = np.eye(self.num_classes)[int(ix)]
-					boxes.append([float(x1), float(y1), float(x2), float(y2)]+one_hot_ix.tolist())			
-			#resize images to 320 x 320 and correct labels accordingly
-			img, boxes = resize(img, boxes, self.input_size)
-			#process boxes and return the truth tensor
-			boxes = np.array(boxes)
-			labels = transformer1(boxes, self.num_classes, self.iou_thresh)
-			x_batch.append(img)
-			y_batch.append(labels)
-		self.batch_ptr += self.batch_size
-		return np.array(x_batch), np.array(y_batch)
+	def batches(self, ptr=None):
+		for i in range(int(len(self.images)/self.batch_size)):
+			x_batch = []
+			y_batch = []
+			assert self.batch_ptr < len(self.images), "Batch pointer exceeded"
+			head = self.batch_ptr
+			tail = self.batch_ptr+self.batch_size
+			for image, label in zip(self.images[head:tail], self.labels[head:tail]):
+				img = cv2.imread(image)
+				boxes = []
+				with open(label) as lf:
+					for line in lf.readlines():
+						ix, x1, y1, x2, y2 = line.split("\t")
+						one_hot_ix = np.eye(self.num_classes)[int(ix)]
+						boxes.append([float(x1), float(y1), float(x2), float(y2)]+one_hot_ix.tolist())			
+				#resize images to 320 x 320 and correct labels accordingly
+				img, boxes = resize(img, boxes, self.input_size)
+				#process boxes and return the truth tensor
+				boxes = np.array(boxes)
+				labels = transformer1(boxes, self.num_classes, self.iou_thresh)
+				x_batch.append(img)
+				y_batch.append(labels)
+			self.batch_ptr += self.batch_size
+			yield np.array(x_batch), np.array(y_batch)
 
 	def set_batch_ptr(self, batch_ptr):
 		self.batch_ptr = batch_ptr
