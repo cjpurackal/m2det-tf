@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, BatchNormalization
 
-
+#dx,dy,dq,dh isn't being predicted here
 def simple_predictor(config, feature):
 	num_anchors = config["anchors"]["num_anchors"]
 	reg = Conv2D(
