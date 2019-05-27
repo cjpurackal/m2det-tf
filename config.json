@@ -22,7 +22,7 @@
                 "images_dir":   "/home/purackal/projects/hobby/m2det-tf/datasets/minicoco/",
                 "labels_dir":   "/home/purackal/projects/hobby/m2det-tf/datasets/minicoco/",     
                 "pretrained_weights":   "",
-                "batch_size":           16,
+                "batch_size":           3,
                 "learning_rate":        1e-4,
                 "nb_epochs":            1,
                 "saved_weights_name":   "coco2017.h5",
