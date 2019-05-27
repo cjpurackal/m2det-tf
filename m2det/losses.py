@@ -69,7 +69,7 @@ def calc_box_loss(box_outputs, box_targets, positive_flag, delta=0.1):
 
     return box_loss
 
-def calc_loss(y_true, y_pred, box_loss_weight):
+def calc_loss(y_true, y_pred, box_loss_weight=20):
     """
     Args:
         y_true: [batch_size, num_anchors, 4 + num_classes + 1]
