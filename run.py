@@ -24,33 +24,33 @@ print (imgs.shape)
 print (lbls.shape)
 
 
+image = tf.Variable(np.random.rand(1,320,320, 3), dtype=tf.float32)
+f1, f2 = Darknet21(image, config).forward()
+f1, f2 = VGG16(image, config).forward()
+ffm = FFM(f1, f2)
+
+#collecting decoder outputs from TUMs
+decoder_outs = []
+for i in range(config["model"]["tums_no"]):
+	if i == 0:
+		features = ffm.v1()
+		features = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=256)(features)
+	else:
+		features = ffm.v2(decoder_outs[i-1][-1])
+	decoder_outs.append(TUM(config,features).forward())
+
+#constructing mlfpn using SFAM
+mlfpn = SFAM(config, decoder_outs).forward()
+boxes = []
+classes = []
+for feature_cube in mlfpn:
+	box_pred = simple_predictor(config, feature_cube)
+	cls_pred = simple_classifier(config, feature_cube)
+	boxes.append(box_pred)
+	classes.append(cls_pred)
 
 
-
-
-
-# image = tf.Variable(np.random.rand(1,320,320, 3), dtype=tf.float32)
-# f1, f2 = Darknet21(image, config).forward()
-# f1, f2 = VGG16(image, config).forward()
-# ffm = FFM(f1, f2)
-
-# #collecting decoder outputs from TUMs
-# decoder_outs = []
-# for i in range(config["model"]["tums_no"]):
-# 	if i == 0:
-# 		features = ffm.v1()
-# 		features = Conv2D(kernel_size=(1, 1), strides=(1, 1), filters=256)(features)
-# 	else:
-# 		features = ffm.v2(decoder_outs[i-1][-1])
-# 	decoder_outs.append(TUM(config,features).forward())
-
-# #constructing mlfpn using SFAM
-# mlfpn = SFAM(config, decoder_outs).forward()
-# boxes = []
-# classes = []
-# for feature_cube in mlfpn:
-# 	boxes.append(simple_predictor(config, feature_cube))
-# 	classes.append(simple_classifier(config, feature_cube))
-
-# all_box = tf.concat(boxes, axis=1)
-# all_classes = tf.concat(classes, axis=1)
+all_box = tf.concat(boxes, axis=1)
+all_classes = tf.concat(classes, axis=1)
+all_box = tf.reshape(all_box, [-1, int(all_box.shape[1].value/4), 4])
+y_pred = tf.concat([all_box,all_classes], axis=2)

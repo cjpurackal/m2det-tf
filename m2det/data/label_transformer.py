@@ -13,7 +13,6 @@ def transformer1(boxes, num_classes, iou_thresh):
 			picked_iou = iou_scores[iou_mask]
 			picked_anchors = anchors[iou_mask]
 			encoded_box[:, -1][iou_mask] = picked_iou
-
 			#computing prior-box center offsets, log
 			box_wh = box[2:] - box[:2]
 			picked_anchors_wh = picked_anchors[:,2:4] - picked_anchors[:, :2]

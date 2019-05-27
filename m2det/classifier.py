@@ -4,7 +4,7 @@ from tensorflow.keras.activations import softmax
 
 
 def simple_classifier(config, feature):
-	num_classes = 2 + 1  # background
+	num_classes = config["model"]["classes"]+1 #for background
 	num_anchors = config["anchors"]["num_anchors"]
 	cls = Conv2D(
 		filters=num_classes*num_anchors,

@@ -131,10 +131,14 @@ def visualize(img, boxes):
 	boxes_xy_wh[:, 3] = boxes[:, 3] - boxes[:, 1]
 	for i in range(len(boxes_xy_wh)):
 		k = 0
+		if i == 0:
+			ec = 'r'
+		else:
+			ec = 'g'
 		s = patches.Rectangle(
 			(boxes_xy_wh[i][k], boxes_xy_wh[i][k+1]),
 			boxes_xy_wh[i][k+2], boxes_xy_wh[i][k+3],
-			linewidth=1, edgecolor='g',
+			linewidth=1, edgecolor=ec,
 			facecolor="none"
 			)
 		ax.add_patch(s)
