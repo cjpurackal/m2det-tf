@@ -11,7 +11,8 @@ from m2det.utils import bilinear_upsampler
 from m2det.box_predictors import simple_predictor
 from m2det.classifier import simple_classifier
 from m2det.data import Loader
-# tf.enable_eager_execution()
+from m2det.losses import calc_loss
+tf.enable_eager_execution()
 
 
 config_file = sys.argv[1]
@@ -19,14 +20,15 @@ assert config_file, "Specify config file"
 config = json.load(open(config_file, "r"))
 
 loader = Loader(config)
-imgs, lbls = loader.next_batch()
-print (imgs.shape)
-print (lbls.shape)
 
+for x_batch, y_batch in loader.batches():
+	print (x_batch.shape)
 
-image = tf.Variable(np.random.rand(1,320,320, 3), dtype=tf.float32)
-f1, f2 = Darknet21(image, config).forward()
-f1, f2 = VGG16(image, config).forward()
+print ("done")
+imgs = tf.Variable(imgs, dtype=tf.float32)
+
+# f1, f2 = Darknet21(imgs, config).forward()
+f1, f2 = VGG16(imgs, config).forward()
 ffm = FFM(f1, f2)
 
 #collecting decoder outputs from TUMs
@@ -52,5 +54,10 @@ for feature_cube in mlfpn:
 
 all_box = tf.concat(boxes, axis=1)
 all_classes = tf.concat(classes, axis=1)
-all_box = tf.reshape(all_box, [-1, int(all_box.shape[1].value/4), 4])
+all_box = tf.reshape(all_box, [-1, int(all_box.shape[1]/4), 4])
 y_pred = tf.concat([all_box,all_classes], axis=2)
+
+
+lbls = tf.to_float(lbls)
+loss = calc_loss(lbls, y_pred)
+print (loss)

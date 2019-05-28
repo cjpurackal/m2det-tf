@@ -40,9 +40,11 @@ class Loader:
 						boxes.append([float(x1), float(y1), float(x2), float(y2)]+one_hot_ix.tolist())			
 				#resize images to 320 x 320 and correct labels accordingly
 				img, boxes = resize(img, boxes, self.input_size)
+				img = np.float32(img)
 				#process boxes and return the truth tensor
 				boxes = np.array(boxes)
 				labels = transformer1(boxes, self.num_classes, self.iou_thresh)
+				labels = np.float32(labels)
 				x_batch.append(img)
 				y_batch.append(labels)
 			self.batch_ptr += self.batch_size
