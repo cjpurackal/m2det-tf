@@ -3,11 +3,11 @@
                 "name":"pascalvoc2017",
                 "input_size": 320,
                 "classes":80,
-                "backbone": "darknet21",
+                "backbone": "vgg16",
                 "backbone_feature1_size": [40, 40],
                 "backbone_feature2_size": [20, 20],
                 "scales": 5,
-                "tums_no" : 8
+                "tums" : 8
 
 	},
 
