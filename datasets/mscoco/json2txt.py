@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--image_dir', required=True)
 parser.add_argument('--annotation_path', required=True)
 parser.add_argument('--output_dir', required=True)
-
+args = parser.parse_args()
 
 with open(args.annotation_path) as f:
 	data = json.load(f)
